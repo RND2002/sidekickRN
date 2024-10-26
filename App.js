@@ -15,6 +15,11 @@ import ProviderProfileScreen from './screen/ProviderProfileScreen';
 import AddressScreen from './screen/AddressScreen';
 import CartScreen from './screen/CartScreen';
 import SignupScreen from './screen/SignupScreen';
+import HeaderNavigation from './components/HeaderNavigation';
+import { ArrowLeftSquare } from 'lucide-react';
+import { GlobalStyles } from './components/styles';
+import ProviderProfile from './components/ProviderProfile';
+import ServiceByIconScreen from './screen/ServiceByIconScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -24,17 +29,19 @@ function MyTabs() {
     <Tab.Navigator
       screenOptions={{
         headerShown: false, // No headers for tabs
-        tabBarActiveTintColor: '#f9d66e',
+        tabBarActiveTintColor: GlobalStyles.colors.buttonColor,
         tabBarInactiveTintColor: 'black',
+        color:GlobalStyles.colors.headerColor
       }}
     >
       <Tab.Screen
         name="Home"
         component={CustomerDashboard}
         options={{
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" color={color} size={size} />
-          ),
+           tabBarIcon: ({ color, size }) => (
+             <Ionicons name="home" color={color} size={size} />
+           ),
+          headerShown:false
         }}
       />
       <Tab.Screen
@@ -50,6 +57,7 @@ function MyTabs() {
         name="Recent Services"
         component={CartScreen}
         options={{
+          headerShown: true, 
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="list" color={color} size={size} />
           ),
@@ -59,6 +67,7 @@ function MyTabs() {
         name="Your Profile"
         component={UserProfileScreen}
         options={{
+          headerShown: true, 
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person" color={color} size={size} />
           ),
@@ -76,17 +85,19 @@ function AppNavigator() {
     <NavigationContainer>
       <Stack.Navigator
         screenOptions={{
-          title: "Sidekick",
-          headerStyle: { backgroundColor: '#f9d66e' },
-          contentStyle: { backgroundColor: 'white' },
+          // title: "Sidekick",
+          // headerStyle: { backgroundColor: '#f9d66e' },
+          // contentStyle: { backgroundColor: 'white' },
         }}
       >
         {isLoggedIn ? (
           <>
-            <Stack.Screen name="Main" component={MyTabs} options={{ headerShown: true }} />
+            <Stack.Screen name="Main" component={MyTabs} options={{ headerShown: false }}  />
             <Stack.Screen name="ServiceByNameScreen" component={ServiceByNameScreen} />
+            <Stack.Screen name="ServiceByIconScreen" component={ServiceByIconScreen} />
             <Stack.Screen name="ProviderProfileScreen" component={ProviderProfileScreen} />
             <Stack.Screen name="AddressScreen" component={AddressScreen} />
+            <Stack.Screen name="ProviderProfile" component={ProviderProfile}  />
           </>
         ) : (
           <>

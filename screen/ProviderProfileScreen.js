@@ -43,6 +43,7 @@ function ProviderProfileScreen({ route, navigation }) {
     const goToAddressPage=async()=>{
         navigation.navigate('AddressScreen',{providerId})
     }
+    console.log()
 
     return (
         <View style={styles.container}>
@@ -52,9 +53,10 @@ function ProviderProfileScreen({ route, navigation }) {
                 userId={providerId}
                 name={providerData.fullName}
                 profession={providerData.occupation}
-                availability={providerData.available ? 'Available' : 'Not Available'}
+                availability={providerData.available}
                 
             />
+
             <View><Text>{providerData.description}</Text></View>
             <MyButton onPress={goToAddressPage} backgroundColor="green" title="Book Service"/>
         </View>

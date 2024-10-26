@@ -11,6 +11,7 @@ import {
   exexuteMarkJobDone,
 } from "../api/CartApi";
 import { useSelector } from "react-redux";
+import { GlobalStyles } from "./styles";
 function Cart({
   requesterName,
   requesterPhone,
@@ -150,7 +151,7 @@ function Cart({
                 onPress={handleOpenModal}
                 style={styles.iconButton}
               >
-                <Feather name="upload" size={24} color="#FFD700" />
+                <Feather name="upload" size={24} color={GlobalStyles.colors.buttonColor} />
                 <Text style={styles.iconText}>Upload Report</Text>
               </TouchableOpacity>
 
@@ -228,7 +229,7 @@ const styles = StyleSheet.create({
     width: "30%", // 30% width to leave space between icons
     alignItems: "center",
     paddingVertical: 10,
-    backgroundColor: "#fff", // White background for contrast
+    backgroundColor: GlobalStyles.colors.outlineButton, // White background for contrast
     borderRadius: 8, // Rounded icons container
     borderWidth: 1,
     borderColor: "#ddd",

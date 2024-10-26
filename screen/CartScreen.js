@@ -5,10 +5,11 @@ import {
   exportgetAllCartDataService,
   getAllJobDataForProfessionalService,
 } from "../api/CartApi";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect } from "react";
 import { useSelector } from "react-redux";
+import { GlobalStyles } from "../components/styles";
 
-function CartScreen() {
+function CartScreen({navigation}) {
   const [cartData, setCartData] = useState([]);
   const token = useSelector((state) => state.auth.token);
   const role = useSelector((state) => state.loggedInUser.role);
@@ -17,6 +18,19 @@ function CartScreen() {
   useEffect(() => {
     getCartData();
   }, []);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: "Your Services",
+      headerStyle: {
+        backgroundColor: GlobalStyles.colors.buttonColor, // Change the background color
+      },
+      headerTintColor: "#fff", // Change the text color
+      headerTitleStyle: {
+        //fontWeight: 'bold', // Optional: change the font style
+      },
+    });
+  }, [navigation]);
 
   const getCartData = async () => {
     if (role === "User") {

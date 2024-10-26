@@ -7,6 +7,8 @@ import {
   useCameraPermissions,
   PermissionStatus,
 } from 'expo-image-picker';
+import CustomButton from "./CustomButton";
+import { GlobalStyles } from "./styles";
 const JobSubmissionModal = ({ visible, onClose, onSubmit }) => {
   const [description, setDescription] = useState('');
   const [isDone, setIsDone] = useState(false);
@@ -106,8 +108,10 @@ const JobSubmissionModal = ({ visible, onClose, onSubmit }) => {
           </View>
 
           {/* Submit Button */}
-          <Button title="Submit Report" onPress={handleSubmit} />
-          <Button title="Close" color="red" onPress={onClose} />
+          <View style={styles.submitButton}>
+          <CustomButton  title="Submit Report" width={"100%"} onPress={handleSubmit} />
+          </View>
+          <CustomButton title="Close" backgroundColor={GlobalStyles.colors.outlineButton} textColor={"black"} color="red" width={"100%"} onPress={onClose} />
         </View>
       </View>
     </Modal>
@@ -131,6 +135,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 15,
+  },
+  submitButton:{
+    marginBottom:10
   },
   input: {
     borderColor: '#ccc',

@@ -20,4 +20,13 @@ export const executeHandleAvailability = (token) => {
       }
     );
   };
+
+  export const executeGetProviderDataById = (id, token) => {
+    return apiClient.get(`/provider/${id}`, {
+      // Fix: comma instead of closing parenthesis
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  };
   

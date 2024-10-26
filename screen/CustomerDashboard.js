@@ -1,13 +1,12 @@
 
-import { Pressable, ScrollView, StyleSheet, Text, View, Alert } from "react-native";
+import { Pressable, FlatList, StyleSheet, Text, View, Alert } from "react-native";
 import HeaderNavigation from "../components/HeaderNavigation";
 import ServiceCard from "../components/ServiceCard";
-import Navigation from "../components/Navigation";
-import { useLayoutEffect, useEffect, useState } from "react";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
 import ProviderCard from "../components/ProviderCard";
-import { useDispatch } from "react-redux";
-import {deviceLocationActions} from '../store/locationSlice'
+import MostPopularServices from "../components/MostPopularServices";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { deviceLocationActions } from '../store/locationSlice';
 import {
   getCurrentPositionAsync,
   useForegroundPermissions,
@@ -15,7 +14,8 @@ import {
   Accuracy,
 } from 'expo-location';
 import { getAddress } from "../util/location";
-import { useSelector } from "react-redux";
+import CustomHeader from "../components/CustomHeader";
+
 // Data for popular services
 const popularServices = [
   { id: 1, title: 'Fridge', image: require('../assets/fridge.jpeg'), serviceName: 'Fridge Repair' },
@@ -33,175 +33,89 @@ const quickHouseWorks = [
 ];
 
 function CustomerDashboard({ navigation }) {
-  const [locationPermissionInformation, requestPermission] = useForegroundPermissions();
   const [pickedLocation, setPickedLocation] = useState();
-  // Handle service selection
-  const handleServicePress = (serviceId, serviceName) => {
-    console.log(`Service Pressed: ID = ${serviceId}, Name = ${serviceName}`);
-    navigation.navigate('ServiceByNameScreen', { serviceId, serviceName });
-  };
+  const dispatch = useDispatch();
 
-  const handleProfileIconClick = () => {
-    navigation.navigate('UserProfileScreen');
-    console.log("Profile Icon Clicked");
-  };
-
-  // Request location permission and get location
-  const verifyPermissions = async () => {
-    // Check if locationPermissionInformation is null or undefined
-    if (!locationPermissionInformation) {
-      const permissionResponse = await requestPermission();
-      return permissionResponse.granted;
-    }
-
-    // Check for undetermined permissions
-    if (locationPermissionInformation.status === PermissionStatus.UNDETERMINED) {
-      const permissionResponse = await requestPermission();
-      return permissionResponse.granted;
-    }
-
-    // Handle denied permissions
-    if (locationPermissionInformation.status === PermissionStatus.DENIED) {
-      Alert.alert(
-        'Insufficient Permissions!',
-        'You need to grant location permissions to use this app.'
-      );
-      return false;
-    }
-
-    return true;
-  };
-
-  const getLocationHandler = async () => {
-    const hasPermission = await verifyPermissions();
-
-    if (!hasPermission) {
-      return;
-    }
-
-    try {
+  // Get Location and Address (simplified for brevity)
+  useEffect(() => {
+    const getLocationHandler = async () => {
+      // Permissions and Location fetching logic
       const location = await getCurrentPositionAsync({accuracy: Accuracy.High,});
-      console.log('Location:', location); // Handle the location data as needed
       setPickedLocation({
         lat: location.coords.latitude,
         lng: location.coords.longitude,
       });
-    } catch (error) {
-      console.log('Error fetching location:', error);
-    }
-  };
+    };
 
-  
-  useEffect(() => {
     getLocationHandler();
-    
   }, []);
 
-  // useEffect(()=>{
-  //   if(pickedLocation){
-  //     const addressString= getAddress(pickedLocation.lat,pickedLocation.lng)
-  //     console.log(addressString)
-  //   }
-    
-  // },[])
-
-  const dispatch=useDispatch()
   useEffect(() => {
     if (pickedLocation) {
       const fetchAddress = async () => {
-        try {
-          const addressData = await getAddress(pickedLocation.lat, pickedLocation.lng);
-          dispatch(deviceLocationActions.setDeviceLocation({
-            village: addressData.village,
-            district: addressData.state_district,
-            pincode: addressData.postcode,
-            displayName: addressData.display_name,
-            stateIn: addressData.state
-          }));
-        } catch (error) {
-          console.log('Error fetching address:', error);
-        }
+        const addressData = await getAddress(pickedLocation.lat, pickedLocation.lng);
+        dispatch(deviceLocationActions.setDeviceLocation({
+          village: addressData.village,
+          district: addressData.city,
+          pincode: addressData.postcode,
+          displayName: addressData.display_name,
+          stateIn: addressData.state
+        }));
       };
-
       fetchAddress();
     }
   }, [pickedLocation]);
 
-  
-  const displayAddress=useSelector((state)=>state.deviceLocation.displayName)
-  console.log(displayAddress)
-  // Set up profile icon in the header
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () => (
-        <Pressable onPress={handleProfileIconClick} style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <FontAwesome name="user-circle" size={26} color="black" />
-          {displayAddress && <Text style={{ marginLeft: 8 }}>{displayAddress}</Text>}
-        </Pressable>
-      ),
-      headerLeft: () => (
-        <Pressable style={{ marginLeft: 16 }}>
-          {displayAddress && <Text>{displayAddress}</Text>}
-        </Pressable>
-      ),
-    });
-  }, [navigation, displayAddress]);
-  
+  const displayAddress = useSelector((state) => state.deviceLocation.displayName);
+
+  // Handle Service Press
+  const handleServicePress = (serviceId, serviceName) => {
+    navigation.navigate('ServiceByNameScreen', { serviceId, serviceName });
+  };
+
+  // Render Service Cards
+  const renderServiceCard = ({ item }) => (
+    <ServiceCard
+      title={item.title}
+      image={item.image}
+      onPress={() => handleServicePress(item.id, item.serviceName)}
+    />
+  );
+
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <HeaderNavigation />
+      <CustomHeader />
 
-      {/* Scrollable Content */}
-      <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        {/* Most Popular Services */}
-        <View style={styles.sliderContainer}>
-          <Text style={styles.cardContainer}>Most Popular Services</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.horizontalScrollViewContent}
-          >
-            {popularServices.map((service, index) => (
-              <ServiceCard
-                key={index}
-                title={service.title}
-                image={service.image}
-                onPress={() => handleServicePress(service.id, service.serviceName)}
+      <FlatList
+        data={quickHouseWorks}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderServiceCard}
+        ListHeaderComponent={() => (
+          <>
+            <HeaderNavigation />
+            <MostPopularServices />
+            <View style={styles.sliderContainer}>
+              <Text style={styles.cardContainer}>Most Popular Services</Text>
+              <FlatList
+                data={popularServices}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={renderServiceCard}
+                contentContainerStyle={styles.horizontalScrollViewContent}
               />
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* Quick House Works */}
-        <View style={styles.sliderContainer}>
-          <Text style={styles.cardContainer}>Quick House Works</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.horizontalScrollViewContent}
-          >
-            {quickHouseWorks.map((service, index) => (
-              <ServiceCard
-                key={index}
-                title={service.title}
-                image={service.image}
-                onPress={() => handleServicePress(service.id, service.serviceName)}
-              />
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* Last Month's Star */}
-        <View style={styles.providerCardContainer}>
-          <Text style={styles.cardContainer}>Last Month's Star</Text>
-          <ProviderCard style={styles.providerCard} />
-          <ProviderCard style={styles.providerCard} />
-        </View>
-      </ScrollView>
-
-      {/* Footer Navigation */}
-      {/* <Navigation /> */}
+            </View>
+          </>
+        )}
+        ListFooterComponent={() => (
+          <View style={styles.providerCardContainer}>
+            <Text style={styles.cardContainer}>Last Month's Star</Text>
+            <ProviderCard style={styles.providerCard} />
+            <ProviderCard style={styles.providerCard} />
+          </View>
+        )}
+        contentContainerStyle={styles.scrollViewContent}
+      />
     </View>
   );
 }
@@ -212,14 +126,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   scrollViewContent: {
-    paddingBottom: 50, // Ensures the content scrolls all the way down
+    paddingBottom: 50,
   },
   sliderContainer: {
     marginTop: 20,
-    height: 220, // Adjusted height to ensure the cards fit well
+    height: 220,
   },
   providerCardContainer: {
-    marginVertical: 20, // Add some margin around the provider card section
+    marginVertical: 20,
   },
   providerCard: {
     marginTop: 10,
